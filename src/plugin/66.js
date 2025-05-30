@@ -1068024,8 +1068024,12 @@
 
 
 
+
+
 import axios from 'axios';
 import config from '../../config.cjs';
+import fs from 'fs';
+import path from 'path';
 
 const repoCommand = async (m, Matrix) => {
   try {
@@ -1068063,35 +1068067,43 @@ const repoCommand = async (m, Matrix) => {
 👨‍💻 Owner: ${repoData.owner.login}
       `.trim();
 
-      // Send repository info with context
-      await Matrix.sendMessage(m.from, {
-        text: `${repoInfo}\n\nRequested by @${senderName.split(' ')[0]}`,
-        mentions: [senderJid],
-        contextInfo: {
-          mentionedJid: [senderJid],
-          forwardingScore: 999,
-          isForwarded: true,
-          participant: newsletterJID,
-          stanzaId: m.id,
-          quotedMessage: {
-            conversation: "GitHub Repository Information"
+      // Check if image exists
+      const imagePath = path.join(process.cwd(), 'william', 'repo.jpg');
+      if (fs.existsSync(imagePath)) {
+        // Send image with caption
+        const imageBuffer = fs.readFileSync(imagePath);
+        await Matrix.sendMessage(m.from, {
+          image: imageBuffer,
+          caption: `${repoInfo}\n\nRequested by @${senderName.split(' ')[0]}`,
+          mentions: [senderJid],
+          contextInfo: {
+            mentionedJid: [senderJid],
+            forwardingScore: 999,
+            isForwarded: true,
+            participant: newsletterJID,
+            stanzaId: m.id,
+            quotedMessage: {
+              conversation: "GitHub Repository Information"
+            }
           }
-        }
-      });
-
-      // Additional tech info
-      await Matrix.sendMessage(m.from, {
-        text: `🛠️ *Technical Details*\n` +
-              `Language: ${repoData.language || 'Not specified'}\n` +
-              `Open Issues: ${repoData.open_issues_count}\n` +
-              `Default Branch: ${repoData.default_branch}\n` +
-              `Size: ${Math.round(repoData.size / 1024)} MB`,
-        contextInfo: {
-          forwardingScore: 999,
-          isForwarded: true,
-          participant: newsletterJID
-        }
-      });
+        });
+      } else {
+        // Fallback to text if image not found
+        await Matrix.sendMessage(m.from, {
+          text: `${repoInfo}\n\nRequested by @${senderName.split(' ')[0]}`,
+          mentions: [senderJid],
+          contextInfo: {
+            mentionedJid: [senderJid],
+            forwardingScore: 999,
+            isForwarded: true,
+            participant: newsletterJID,
+            stanzaId: m.id,
+            quotedMessage: {
+              conversation: "GitHub Repository Information"
+            }
+          }
+        });
+      }
 
     } catch (error) {
       console.error('Error fetching repo data:', error);
