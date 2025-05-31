@@ -1068078,7 +1068078,6 @@ const alive = async (m, sock) => {
 │ • leave
 │ • reboot
 │ • fullpp
-│ • vv
 │ • bc
 │ • send
 │ • upload
@@ -1068229,6 +1068228,8 @@ const alive = async (m, sock) => {
 ╭───「 𝗢𝘁𝗵𝗲𝗿 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀 」───╮
 │ • fancy
 │ • ebinary
+│ • scanpair
+│ • scanqr
 │ • truth
 │ • dare
 │ • quiz
@@ -1068237,10 +1068238,7 @@ const alive = async (m, sock) => {
 │ • dbinary
 │ • get
 │ • fetch
-│ • update
 │ • mp3
-│ • tts
-│ • shorten
 │ • tempmail
 │ • checkmail
 │ • about
