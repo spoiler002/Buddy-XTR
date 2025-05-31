@@ -1068038,15 +1068038,12 @@ const repoCommand = async (m, Matrix) => {
     
     if (cmd !== 'repo') return;
 
-    // Customizable newsletter JID
     const newsletterJID = config.NEWSLETTER_JID || '120363313938933929@newsletter';
-    
-    // Get sender info
     const senderName = m.pushName || "User";
     const senderJid = m.sender;
 
     try {
-      // Fetch repository data from GitHub API
+      // Fetch repository data
       const response = await axios.get('https://api.github.com/repos/carl24tech/Buddy-XTR', {
         headers: {
           'User-Agent': 'Buddy-XTR-Bot',
@@ -1068055,8 +1068052,6 @@ const repoCommand = async (m, Matrix) => {
       });
       
       const repoData = response.data;
-      
-      // Format the repository information
       const repoInfo = `
 📂 *${repoData.name}* 
 🔗 ${repoData.html_url}
@@ -1068067,13 +1068062,11 @@ const repoCommand = async (m, Matrix) => {
 👨‍💻 Owner: ${repoData.owner.login}
       `.trim();
 
-      // Check if image exists
+      // Send image or text repo info
       const imagePath = path.join(process.cwd(), 'william', 'repo.jpg');
       if (fs.existsSync(imagePath)) {
-        // Send image with caption
-        const imageBuffer = fs.readFileSync(imagePath);
         await Matrix.sendMessage(m.from, {
-          image: imageBuffer,
+          image: fs.readFileSync(imagePath),
           caption: `${repoInfo}\n\nRequested by @${senderName.split(' ')[0]}`,
           mentions: [senderJid],
           contextInfo: {
@@ -1068088,7 +1068081,6 @@ const repoCommand = async (m, Matrix) => {
           }
         });
       } else {
-        // Fallback to text if image not found
         await Matrix.sendMessage(m.from, {
           text: `${repoInfo}\n\nRequested by @${senderName.split(' ')[0]}`,
           mentions: [senderJid],
@@ -1068105,17 +1068097,57 @@ const repoCommand = async (m, Matrix) => {
         });
       }
 
-    } catch (error) {
-      console.error('Error fetching repo data:', error);
+      // Send audio message with enhanced error handling
+      const audioPath = path.join(process.cwd(), 'carltech', 'nothing.mp3');
+      console.log('Attempting to send audio from:', audioPath); // Debug log
       
-      // Fallback message
+      if (fs.existsSync(audioPath)) {
+        console.log('Audio file found, preparing to send...'); // Debug log
+        try {
+          const audioBuffer = fs.readFileSync(audioPath);
+          await Matrix.sendMessage(m.from, {
+            audio: audioBuffer,
+            mimetype: 'audio/mpeg', // Changed from audio/mp3 to audio/mpeg
+            ptt: false, // Changed from true to false as PTT might cause issues
+            contextInfo: {
+              forwardingScore: 999,
+              isForwarded: true,
+              participant: newsletterJID,
+              stanzaId: m.id,
+              quotedMessage: {
+                conversation: "Audio Message"
+              }
+            }
+          });
+          console.log('Audio message sent successfully'); // Debug log
+        } catch (audioError) {
+          console.error('Error sending audio:', audioError);
+          await Matrix.sendMessage(m.from, {
+            text: `⚠️ Audio message could not be sent\nError: ${audioError.message}`,
+            contextInfo: {
+              forwardingScore: 999,
+              isForwarded: true,
+              participant: newsletterJID
+            }
+          });
+        }
+      } else {
+        console.error('Audio file not found at path:', audioPath);
+        await Matrix.sendMessage(m.from, {
+          text: '⚠️ Audio file not found in server',
+          contextInfo: {
+            forwardingScore: 999,
+            isForwarded: true,
+            participant: newsletterJID
+          }
+        });
+      }
+
+    } catch (error) {
+      console.error('Error in repo command:', error);
       await Matrix.sendMessage(m.from, {
-        text: `⚠️ Failed to fetch repository data\n` +
-              `Error: ${error.message}\n\n` +
-              `Requested by @${senderName.split(' ')[0]}`,
-        mentions: [senderJid],
+        text: `⚠️ Error: ${error.message}`,
         contextInfo: {
-          mentionedJid: [senderJid],
           forwardingScore: 999,
           isForwarded: true,
           participant: newsletterJID
@@ -1068126,7 +1068158,12 @@ const repoCommand = async (m, Matrix) => {
   } catch (error) {
     console.error('Unexpected error in repo command:', error);
     await Matrix.sendMessage(m.from, {
-      text: '⚠️ An unexpected error occurred while processing the repo command.'
+      text: '⚠️ An unexpected error occurred',
+      contextInfo: {
+        forwardingScore: 999,
+        isForwarded: true,
+        participant: newsletterJID
+      }
     });
   }
 };
